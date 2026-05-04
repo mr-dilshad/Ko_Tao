@@ -1,0 +1,323 @@
+CLIENT PROFORMA
+Hostel + SSI / PADI Scuba Certification Platform — Koh Tao
+Digital Booking & Growth Platform for Scuba Courses, Accommodation, Rewards, Coupons, Blogs and Marketplace
+1. Client Basic Information
+Client / Business Name
+[To be filled]
+Business Type
+Hostel cum Scuba Diving School
+Location
+Koh Tao, Thailand
+Certification Bodies
+SSI — Scuba Schools International / PADI — Professional Association of Diving Instructors
+Primary Contact Person
+[Name]
+Designation
+[Owner / Manager / Operations Head]
+Email
+[Email]
+Phone / WhatsApp
+[Number]
+2. Business Overview
+The client operates a hostel cum scuba certification school in Koh Tao, Thailand. The business provides accommodation facilities along with SSI and/or PADI scuba diving courses for customers of different age groups and experience levels.
+The objective is to create a strong online presence where customers can explore the property, view amenities, compare available scuba courses, understand SSI and PADI options, learn about the crew, and make online bookings for both courses and accommodation.
+3. Business Objectives
+Build a professional online presence for the hostel and scuba school.
+Showcase SSI and PADI scuba courses in a clear and attractive manner.
+Help users understand course levels, certification bodies, duration, pricing and eligibility.
+Display hostel amenities, rooms, dormitories and facilities.
+Enable online booking for scuba courses.
+Enable online booking for dormitory / hostel stay.
+Promote course + stay packages.
+Increase direct bookings and reduce dependency on third-party platforms.
+Improve customer engagement through rewards, coupons, blogs and marketplace features.
+Build trust by showcasing experienced instructors, certifications, reviews and safety standards.
+Create a scalable platform that can grow into a complete scuba travel ecosystem.
+4. Target Customers
+Solo travelers
+Backpackers
+First-time scuba learners
+Certified divers
+Advanced scuba learners
+Families and young learners
+Digital nomads
+Adventure tourists
+University groups
+Gap-year travelers
+Returning customers looking for specialty courses
+5. Services Offered by Client
+A. Scuba Diving Courses
+Courses may be listed under SSI, PADI or both, depending on what the client offers.
+Try Scuba / Discover Scuba Diving
+Open Water Diver
+Advanced Open Water / Advanced Adventurer
+Rescue / Stress & Rescue
+Specialty Courses
+Divemaster / Professional Pathway
+Refresher Dives
+Fun Dives for certified divers
+Each course listing should clearly mention:
+Certification body: SSI / PADI
+Course title
+Duration
+Price
+Minimum age
+Skill level
+What is included
+Certification outcome
+Daily schedule
+Equipment included or excluded
+Instructor assigned
+Safety instructions
+FAQs
+Book now button
+B. Hostel / Accommodation
+Dormitory beds
+Private rooms
+Shared rooms
+Long-stay options
+Course + stay packages
+C. Additional Services
+Equipment rental
+Local tours
+Ferry / travel assistance
+Scooter rental support
+Cafe / restaurant
+Merchandise
+Diving accessories
+Travel marketplace items
+6. Required Website / Platform Features
+A. Public Website
+Home page
+About the business
+SSI / PADI scuba course listing
+Individual course detail pages
+Hostel / dormitory listing
+Room / bed detail pages
+Crew / instructor profiles
+Amenities page
+Gallery
+Blogs
+FAQs
+Contact page
+WhatsApp inquiry button
+Google Maps integration
+Reviews / testimonials
+B. Scuba Courses Page
+The courses page should allow users to filter or compare courses by SSI courses, PADI courses, beginner courses, advanced courses, professional pathway courses, fun dives, course duration, price range, minimum age and accommodation bundle availability.
+Suggested section title: Choose Your Scuba Certification: SSI or PADI
+Suggested description: Explore beginner, advanced, specialty and professional scuba diving courses in Koh Tao. Choose from SSI and PADI certification options, compare course details and book your diving journey with an experienced crew.
+7. Online Booking System
+The platform should allow users to book scuba courses, hostel / dormitory stay, course + accommodation bundles and add-on services.
+Booking flow should include:
+Course category
+Certification body: SSI / PADI
+Course name
+Start date
+Number of participants
+Age group
+Existing certification level, if any
+Diving experience
+Accommodation required or not
+Room / bed selection
+Add-ons
+Coupon code
+Payment option
+Booking confirmation by email / WhatsApp
+8. Reward System
+Users can earn reward points for:
+Booking a course
+Booking accommodation
+Referring friends
+Completing certification
+Writing reviews
+Booking again
+Purchasing from marketplace
+Users can redeem points for:
+Course discounts
+Free hostel nights
+Merchandise
+Equipment rental discounts
+Cafe credits
+Future bookings
+9. Coupon System
+Admin should be able to create coupons for first-time customers, students, group bookings, low-season discounts, referral discounts, returning customers, course + stay bundles and seasonal promotions.
+Coupon settings may include:
+Percentage discount
+Fixed amount discount
+Validity period
+Minimum booking value
+Course-specific coupon
+Hostel-specific coupon
+One-time use per customer
+10. Marketplace
+The marketplace can create additional revenue and improve the overall travel experience.
+Diving masks
+Rash guards
+Dry bags
+Swimwear
+Reef-safe sunscreen
+GoPro accessories
+Diving logbooks
+Branded T-shirts
+Water bottles
+Travel towels
+Local tour packages
+Ferry ticket support
+Scooter rental partnerships
+Meal / cafe packages
+For MVP, marketplace can start as a simple product listing with inquiry or pay-at-property option.
+11. Admin Panel Requirements
+SSI courses
+PADI courses
+Course categories
+Course schedules
+Instructor allocation
+Dormitory / room availability
+Bookings
+Payments
+Coupons
+Reward points
+Blogs
+Marketplace products
+Customer reviews
+Customer inquiries
+Email templates
+Reports and analytics
+12. Customer Dashboard
+Customer profile
+Upcoming bookings
+Course details
+Accommodation details
+Payment history
+Reward points
+Available coupons
+Marketplace orders
+Review submission
+Download invoice option
+Future features may include dive log, certification progress, digital badges and instructor feedback.
+13. Trust-Building Requirements
+SSI certification availability
+PADI certification availability
+Instructor certifications and experience
+Safety standards
+Equipment quality
+Emergency support
+Age and medical requirements
+Customer reviews
+Real photos
+Transparent cancellation policy
+Beginner-friendly guidance
+14. Suggested MVP Scope
+Home page
+SSI / PADI course listing
+Course detail page
+Hostel / dorm listing
+Crew profile page
+Online course booking
+Online dorm booking
+Basic coupon system
+Basic reward points
+Blog section
+Contact / WhatsApp integration
+Admin panel
+Email confirmation
+Features to avoid in the first version:
+Complex marketplace
+Mobile app
+Advanced learning portal
+AI assistant
+Multi-vendor system
+Complex CRM automation
+15. Phase-Wise Development Plan
+Phase
+Purpose
+Features
+Phase 1: POC / Concept Website
+Validate the idea and present the business online.
+Landing page; Course showcase; Hostel amenities; Crew profiles; Inquiry form; WhatsApp button; Basic booking request form
+Phase 2: MVP
+Start accepting real bookings.
+Course booking; Dormitory booking; Coupon system; Basic reward points; Payment gateway; Email confirmation; Admin panel
+Phase 3: Growth Platform
+Improve customer retention and revenue.
+Customer dashboard; Referral system; Blogs and SEO; Reviews; Marketplace; Bundle packages; Automated email campaigns
+Phase 4: Advanced Ecosystem
+Build a full scuba travel platform.
+Mobile app; Dive log; Certification tracker; Partner marketplace; AI travel assistant; Multi-language support; CRM; Advanced analytics
+16. Revenue Opportunities
+SSI scuba course bookings
+PADI scuba course bookings
+Hostel / dormitory bookings
+Course + stay packages
+Marketplace sales
+Equipment rental
+Merchandise
+Local tour partnerships
+Referral partnerships
+Paid events
+Professional diving courses
+17. Key USP
+A complete scuba learning and stay experience in Koh Tao, combining SSI and PADI certification options, hostel community, experienced instructors, online booking, rewards, coupons, blogs and travel marketplace in one mobile-first platform.
+18. Information Required from Client
+Requirement
+Details Needed
+Business name
+Official brand name
+Logo / branding
+Existing logo, colors and fonts
+Course list
+Names, duration, prices and age limits
+Certification bodies
+SSI, PADI or both
+Instructor details
+Names, photos, certifications and experience
+Hostel details
+Room types, dorm types and prices
+Amenities
+Wi-Fi, lockers, cafe, laundry, etc.
+Photos / videos
+Property, rooms, diving and crew
+Booking rules
+Cancellation, refund and deposit
+Payment method
+Online payment, pay later or partial payment
+Reward rules
+Points earning and redemption
+Coupon rules
+Discount structure
+Marketplace items
+Products and services to sell
+Admin users
+Who will manage the system
+Languages
+English only or multi-language
+Existing systems
+PMS, booking tools, payment gateway or CRM
+19. Client Discussion Questions
+What is the main goal — online presence, direct booking or complete business automation?
+Do you already have a website or booking system?
+Do you want users to pay online or only submit booking inquiries?
+Do you want to sell course + accommodation bundles?
+How many SSI and PADI courses do you currently offer?
+How many rooms / dorm beds do you have?
+Do you want real-time availability management?
+Do you want rewards and coupons in the first version?
+Do you want a marketplace in MVP or later?
+Who will manage bookings from the admin panel?
+What payment gateway do you prefer?
+Do you want email, WhatsApp or both for booking confirmations?
+Do you have professional photos and videos?
+Do you want blogs for SEO and organic traffic?
+What is your expected launch timeline?
+20. Final Client Summary
+The proposed platform will help the client build a professional digital identity, showcase SSI and PADI scuba courses and hostel facilities, accept online bookings, engage customers through rewards and coupons, and gradually grow into a complete scuba travel and community platform for Koh Tao.
+The recommended approach is to start with a focused POC or MVP, validate customer response, and then expand into advanced features such as marketplace, customer dashboard, referral system, mobile app and CRM automation.
+
+
+Client Proforma | Hostel + SSI / PADI Scuba Certification Platform — Koh Tao
+
+Client Proforma | Hostel + SSI / PADI Scuba Certification Platform — Koh Tao
+
+
+
