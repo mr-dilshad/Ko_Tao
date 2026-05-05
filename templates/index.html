@@ -21,7 +21,12 @@
                 <li><a href="#home">Home</a></li>
                 <li><a href="#courses">Courses</a></li>
                 <li><a href="#hostel">Hostel</a></li>
-                <li><a href="#crew">Crew</a></li>
+                {% if current_user.is_authenticated %}
+                <li><a href="/dashboard">My Dashboard</a></li>
+                <li><a href="/logout" style="color: #e74c3c;"><i class="fa-solid fa-power-off"></i></a></li>
+                {% else %}
+                <li><a href="/login">Sign In</a></li>
+                {% endif %}
                 <li><a href="#contact" class="btn btn-outline">Book Now</a></li>
             </ul>
             <div class="hamburger">

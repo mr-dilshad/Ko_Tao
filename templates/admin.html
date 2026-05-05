@@ -102,6 +102,7 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .badge-success {
@@ -117,7 +118,6 @@
 </head>
 
 <body>
-
     <div class="sidebar">
         <h2><i class="fa-solid fa-water"></i> Admin</h2>
         <a href="#" class="nav-link active" data-target="bookings-view"><i class="fa-solid fa-calendar-check"></i>
@@ -125,9 +125,9 @@
         <a href="#" class="nav-link" data-target="courses-view"><i class="fa-solid fa-book-open"></i> Courses</a>
         <a href="#" class="nav-link" data-target="dormitory-view"><i class="fa-solid fa-bed"></i> Dormitory</a>
         <a href="#" class="nav-link" data-target="coupons-view"><i class="fa-solid fa-ticket"></i> Coupons</a>
+        <a href="#" class="nav-link" data-target="settings-view"><i class="fa-solid fa-gear"></i> Settings</a>
         <a href="/"><i class="fa-solid fa-arrow-left"></i> Back to Site</a>
     </div>
-
     <div class="main-content">
         <div class="header">
             <h2 id="page-title">Dashboard Overview</h2>
@@ -138,7 +138,6 @@
                 <div>Admin User <i class="fa-solid fa-circle-user"></i></div>
             </div>
         </div>
-
         <!-- Bookings View -->
         <div id="bookings-view" class="view-section">
             <div class="card">
@@ -160,17 +159,25 @@
                         {% for b in bookings %}
                         <tr>
                             <td><strong>{{ b.booking_ref }}</strong></td>
-                            <td>{{ b.customer_name }}<br><small style="color:#666">{{ b.customer_email }}</small></td>
-                             <td>
+                            <td>
+                                {{ b.customer_name }}
+                                {% if b.user %}
+                                <span title="Verified Member (Profile: {{ b.user.name }})" style="color: #0ca5b0; font-size: 0.8rem; margin-left: 5px;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
+                                {% endif %}
+                                <br><small style="color:#666">{{ b.customer_email }}</small>
+                            </td>
+                            <td>
                                 {% if b.course %}
                                 {{ b.course.name }} <br><small style="color: #999;">#{{ b.course_id }}</small>
                                 {% else %} - {% endif %}
-                             </td>
-                             <td>
+                            </td>
+                            <td>
                                 {% if b.dorm %}
                                 {{ b.dorm.room_type }} <br><small style="color: #999;">#{{ b.dorm_id }}</small>
                                 {% else %} - {% endif %}
-                             </td>
+                            </td>
                             <td>{{ b.check_in_date or '-' }}</td>
                             <td>
                                 {% if b.coupon_code %}
@@ -210,7 +217,24 @@
                                         title="Checkout / Release Bed"><i class="fa-solid fa-sign-out-alt"></i>
                                         Checkout</button>
                                 </form>
+                                {% endif %}
+                                {% if b.course_id %}
+                                {% if (b.customer_email, b.course.name) in issued_certs %}
+                                <div style="margin-top: 5px;">
+                                    <span class="badge badge-success" style="font-size: 0.7rem;"><i
+                                            class="fa-solid fa-certificate"></i> Cert Issued</span>
+                                </div>
                                 {% else %}
+                                <form action="/admin/bookings/{{ b.id }}/issue-cert" method="POST"
+                                    style="margin: 5px 0 0;">
+                                    <button type="submit" class="btn"
+                                        style="padding: 4px 10px; background: #fff9e6; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                        Issue Cert <i class="fa-solid fa-award"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% endif %}
+                                {% if not b.status == 'Confirmed' and not b.course_id %}
                                 <span style="color: #ccc; font-size: 0.8rem;">-</span>
                                 {% endif %}
                             </td>
@@ -224,7 +248,6 @@
                 </table>
             </div>
         </div>
-
         <!-- Courses View -->
         <div id="courses-view" class="view-section" style="display: none;">
             <div class="card">
@@ -269,7 +292,6 @@
                         style="background: #0ca5b0; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">Create
                         Course</button>
                 </form>
-
                 <table>
                     <thead>
                         <tr>
@@ -290,9 +312,12 @@
                             </td>
                             <td>
                                 {% if c.image_url %}
-                                <img src="{{ c.image_url }}" alt="Course" style="width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                                <img src="{{ c.image_url }}" alt="Course"
+                                    style="width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
                                 {% else %}
-                                <div style="width: 50px; height: 35px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.6rem;">No Pic</div>
+                                <div
+                                    style="width: 50px; height: 35px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.6rem;">
+                                    No Pic</div>
                                 {% endif %}
                             </td>
                             <td>{{ c.name }}</td>
@@ -316,12 +341,10 @@
                 </table>
             </div>
         </div>
-
         <!-- Dormitory View -->
         <div id="dormitory-view" class="view-section" style="display: none;">
             <div class="card">
                 <h3>Dormitory Inventory</h3>
-
                 <form action="/admin/dorms/new" method="POST"
                     style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
                     <h4 style="margin-top: 0; margin-bottom: 10px; color: #333;">Add New Dormitory</h4>
@@ -337,7 +360,6 @@
                         style="background: #0ca5b0; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">Create
                         Dorm</button>
                 </form>
-
                 <table>
                     <thead>
                         <tr>
@@ -377,12 +399,42 @@
                 </table>
             </div>
         </div>
+        <!-- Settings View -->
+        <div id="settings-view" class="view-section" style="display: none;">
+            <div class="card" style="max-width: 600px;">
+                <h3>Platform Settings</h3>
+                <form action="/admin/settings/update" method="POST" style="margin-top: 20px;">
+                    <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
+                        <h4 style="margin-top: 0; color: #333; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-star" style="color: #f1c40f;"></i> Reward Point System
+                        </h4>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
+                            Define how many points users earn for every successful booking they make on the platform.
+                        </p>
 
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 10px;">
+                            Points Per Booking
+                        </label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" name="reward_points" value="{{ reward_points }}" required min="0"
+                                max="10000"
+                                style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 150px; font-size: 1.1rem; font-weight: 700; color: #0ca5b0;">
+                            <span style="font-weight: 600; color: #999;">Points</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"
+                        style="margin-top: 25px; width: 100%; padding: 15px; font-size: 1rem;">
+                        Save Settings
+                    </button>
+                </form>
+            </div>
+        </div>
         <!-- Coupons View -->
         <div id="coupons-view" class="view-section" style="display: none;">
             <div class="card">
                 <h3>Coupon Management</h3>
-
                 <form action="/admin/coupons/new" method="POST"
                     style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
                     <h4 style="margin-top: 0; margin-bottom: 10px; color: #333;">Create New Coupon</h4>
@@ -412,7 +464,6 @@
                         style="background: #0ca5b0; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">Create
                         Coupon</button>
                 </form>
-
                 <table>
                     <thead>
                         <tr>
@@ -456,7 +507,6 @@
             </div>
         </div>
     </div>
-
     <!-- Edit Coupon Modal -->
     <div id="edit-coupon-modal"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
@@ -498,7 +548,6 @@
             </form>
         </div>
     </div>
-
     <!-- Edit Course Modal -->
     <div id="edit-course-modal"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
@@ -529,7 +578,8 @@
                     <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Minimum Age</label>
                     <input type="number" id="edit_course_min_age" name="min_age" min="0" max="100"
                         style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Course Picture (Replace)</label>
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Course Picture
+                        (Replace)</label>
                     <input type="file" name="image" accept="image/*"
                         style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white;">
                 </div>
@@ -539,7 +589,6 @@
             </form>
         </div>
     </div>
-
     <!-- Edit Dorm Modal -->
     <div id="edit-dorm-modal"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
@@ -571,13 +620,11 @@
             </form>
         </div>
     </div>
-
     <script>
         // Sidebar Navigation Logic
         const navLinks = document.querySelectorAll('.nav-link');
         const viewSections = document.querySelectorAll('.view-section');
         const pageTitle = document.getElementById('page-title');
-
         function activateTab(link) {
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
@@ -585,23 +632,19 @@
             viewSections.forEach(section => section.style.display = 'none');
             const targetId = link.getAttribute('data-target');
             document.getElementById(targetId).style.display = 'block';
-
             // Update URL without page reload so refresh stays on same tab
             const tabName = targetId.replace('-view', '');
             history.replaceState(null, '', '/dashboard?tab=' + tabName);
         }
-
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 activateTab(link);
             });
         });
-
         // Restore tab from URL on page load
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
-
         if (tab) {
             const targetLink = document.querySelector(`.nav-link[data-target="${tab}-view"]`);
             if (targetLink) {
@@ -612,7 +655,6 @@
         } else {
             activateTab(document.querySelector('.nav-link'));
         }
-
         // Initialize Drag and Drop sorting for Courses
         const coursesTbody = document.getElementById('courses-tbody');
         if (coursesTbody) {
@@ -624,7 +666,6 @@
                     coursesTbody.querySelectorAll('tr').forEach(row => {
                         order.push(row.getAttribute('data-id'));
                     });
-
                     fetch('/admin/courses/reorder', {
                         method: 'POST',
                         headers: {
@@ -640,22 +681,18 @@
                 }
             });
         }
-
         // Booking Search Filter
         function searchBookings() {
             const input = document.getElementById('booking-search');
             const filter = input.value.toLowerCase();
             const table = document.getElementById('bookings-table');
             const tr = table.getElementsByTagName('tr');
-
             // Start from 1 to skip table header
             for (let i = 1; i < tr.length; i++) {
                 // If it's the 'No bookings yet' row, skip it
                 if (tr[i].cells.length === 1) continue;
-
                 const refCell = tr[i].getElementsByTagName('td')[0];
                 const customerCell = tr[i].getElementsByTagName('td')[1];
-
                 if (refCell || customerCell) {
                     const txtValueRef = refCell.textContent || refCell.innerText;
                     const txtValueCustomer = customerCell.textContent || customerCell.innerText;
@@ -667,7 +704,6 @@
                 }
             }
         }
-
         // Coupon Date Validation
         const validFrom = document.getElementById('valid_from');
         const validUntil = document.getElementById('valid_until');
@@ -677,9 +713,7 @@
                     let d = new Date(this.value);
                     d.setDate(d.getDate() + 1);
                     let nextDay = d.toISOString().split('T')[0];
-
                     validUntil.min = nextDay;
-
                     // If end date is set and is invalid, update it to the earliest valid date
                     if (validUntil.value && validUntil.value <= this.value) {
                         validUntil.value = nextDay;
@@ -689,11 +723,9 @@
                 }
             });
         }
-
         // Edit Coupon Modal Logic
         const editModal = document.getElementById('edit-coupon-modal');
         const closeEditModal = document.getElementById('close-edit-modal');
-
         function openEditModal(id, code, discount, minAmt, validFrom, validUntil) {
             document.getElementById('edit-coupon-form').action = '/admin/coupons/' + id + '/edit';
             document.getElementById('edit_code').value = code;
@@ -701,7 +733,6 @@
             document.getElementById('edit_min_amount').value = minAmt;
             document.getElementById('edit_valid_from').value = validFrom;
             document.getElementById('edit_valid_until').value = validUntil;
-
             // Set min valid_until based on valid_from if it exists
             const editValidFrom = document.getElementById('edit_valid_from');
             const editValidUntil = document.getElementById('edit_valid_until');
@@ -712,16 +743,13 @@
             } else {
                 editValidUntil.removeAttribute('min');
             }
-
             editModal.style.display = 'flex';
         }
-
         if (closeEditModal && editModal) {
             closeEditModal.addEventListener('click', function () {
                 editModal.style.display = 'none';
             });
         }
-
         if (editModal) {
             window.addEventListener('click', function (e) {
                 if (e.target === editModal) {
@@ -729,7 +757,6 @@
                 }
             });
         }
-
         // Edit Coupon Date Validation
         const editValidFrom = document.getElementById('edit_valid_from');
         const editValidUntil = document.getElementById('edit_valid_until');
@@ -739,9 +766,7 @@
                     let d = new Date(this.value);
                     d.setDate(d.getDate() + 1);
                     let nextDay = d.toISOString().split('T')[0];
-
                     editValidUntil.min = nextDay;
-
                     if (editValidUntil.value && editValidUntil.value <= this.value) {
                         editValidUntil.value = nextDay;
                     }
@@ -750,7 +775,6 @@
                 }
             });
         }
-
         // Edit Course Modal Logic
         const editCourseModal = document.getElementById('edit-course-modal');
         function openEditCourseModal(id, name, duration, cert, price, minAge) {
@@ -763,10 +787,8 @@
             document.getElementById('edit_course_min_age').value = minAge;
             editCourseModal.style.display = 'flex';
         }
-
         document.getElementById('close-edit-course-modal').addEventListener('click', () => { editCourseModal.style.display = 'none'; });
         window.addEventListener('click', (e) => { if (e.target === editCourseModal) editCourseModal.style.display = 'none'; });
-
         // Edit Dorm Modal Logic
         const editDormModal = document.getElementById('edit-dorm-modal');
         function openEditDormModal(id, roomType, price, total, available) {
@@ -777,10 +799,8 @@
             document.getElementById('edit_dorm_available').value = available;
             editDormModal.style.display = 'flex';
         }
-
         document.getElementById('close-edit-dorm-modal').addEventListener('click', () => { editDormModal.style.display = 'none'; });
         window.addEventListener('click', (e) => { if (e.target === editDormModal) editDormModal.style.display = 'none'; });
-
         const editDormTotal = document.getElementById('edit_dorm_total');
         const editDormAvailable = document.getElementById('edit_dorm_available');
         if (editDormTotal && editDormAvailable) {

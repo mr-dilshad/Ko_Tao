@@ -1,23 +1,47 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
 import uuid
 import os
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bluereef.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads/courses'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['SECRET_KEY'] = 'blue-reef-secret-123'
 db = SQLAlchemy(app)
+
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 # --- Database Models ---
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    bookings = db.relationship('Booking', backref='user', lazy=True)
+    reward = db.relationship('Reward', backref='user', uselist=False)
+    certificates = db.relationship('Certificate', backref='user', lazy=True)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,6 +70,7 @@ class Coupon(db.Model):
 
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     booking_ref = db.Column(db.String(50), unique=True, nullable=False)
     customer_name = db.Column(db.String(100), nullable=False)
     customer_email = db.Column(db.String(100), nullable=False)
@@ -64,27 +89,141 @@ class Booking(db.Model):
 
 class Reward(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     customer_email = db.Column(db.String(100), unique=True, nullable=False)
     points = db.Column(db.Integer, default=0)
 
+class Certificate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    customer_email = db.Column(db.String(100), nullable=False)
+    course_name = db.Column(db.String(100), nullable=False)
+    issue_date = db.Column(db.DateTime, default=datetime.utcnow)
+    cert_ref = db.Column(db.String(50), unique=True)
+
+class Setting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, nullable=False)
+    value = db.Column(db.String(255))
+
 # --- Routes ---
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        name = request.form.get('name')
+        password = request.form.get('password')
+        
+        user = User.query.filter_by(email=email).first()
+        if user:
+            flash("An account with this email already exists. Please sign in.", "error")
+            return redirect(url_for('register'))
+            
+        new_user = User(
+            email=email,
+            name=name,
+            password=generate_password_hash(password, method='scrypt')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        
+        # Initialize or link rewards
+        reward = Reward.query.filter_by(customer_email=email).first()
+        if reward:
+            reward.user_id = new_user.id
+        else:
+            reward = Reward(user_id=new_user.id, customer_email=email, points=0)
+            db.session.add(reward)
+            
+        # Link past guest bookings to the new user
+        past_bookings = Booking.query.filter_by(customer_email=email, user_id=None).all()
+        for booking in past_bookings:
+            booking.user_id = new_user.id
+            
+        # Link past certificates to the new user
+        past_certs = Certificate.query.filter_by(customer_email=email, user_id=None).all()
+        for cert in past_certs:
+            cert.user_id = new_user.id
+            
+        db.session.commit()
+        
+        login_user(new_user)
+        return redirect(url_for('user_dashboard'))
+        
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        remember = True if request.form.get('remember') else False
+        
+        user = User.query.filter_by(email=email).first()
+        if not user or not check_password_hash(user.password, password):
+            flash("Invalid email or password. Please try again.", "error")
+            return redirect(url_for('login'))
+            
+        login_user(user, remember=remember)
+        
+        if user.is_admin:
+            return redirect(url_for('admin'))
+        return redirect(url_for('user_dashboard'))
+        
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
+@app.route('/dashboard')
+@login_required
+def user_dashboard():
+    return render_template('dashboard.html', user=current_user)
+
 @app.route('/')
-def index():
+def home():
     courses = Course.query.order_by(Course.display_order.asc(), Course.id.asc()).all()
     dorms = Dormitory.query.filter(Dormitory.available_beds > 0).all()
     coupons = Coupon.query.all()
     return render_template('index.html', courses=courses, dorms=dorms, coupons=coupons)
 
-@app.route('/dashboard')
+@app.route('/admin')
+@login_required
 def admin():
+    if not current_user.is_admin:
+        flash("Access denied. Administrators only.", "error")
+        return redirect(url_for('home'))
     bookings = Booking.query.order_by(Booking.created_at.desc()).all()
     courses = Course.query.order_by(Course.display_order.asc(), Course.id.asc()).all()
     dorms = Dormitory.query.all()
     coupons = Coupon.query.all()
-    return render_template('admin.html', bookings=bookings, courses=courses, dorms=dorms, coupons=coupons)
+    
+    # Get settings
+    points_setting = Setting.query.filter_by(key='points_per_booking').first()
+    reward_points = int(points_setting.value) if points_setting else 100
+    
+    certificates = Certificate.query.all()
+    # Create a set of (customer_email, course_name) for easy lookup
+    issued_certs = {(c.customer_email, c.course_name) for c in certificates}
+    
+    return render_template('admin.html', bookings=bookings, courses=courses, dorms=dorms, coupons=coupons, reward_points=reward_points, issued_certs=issued_certs)
 
-@app.route('/admin/courses/new', methods=['POST'])
+@app.route('/admin/settings/update', methods=['POST'])
+def update_settings():
+    points = request.form.get('reward_points')
+    if points:
+        setting = Setting.query.filter_by(key='points_per_booking').first()
+        if not setting:
+            setting = Setting(key='points_per_booking', value=str(points))
+            db.session.add(setting)
+        else:
+            setting.value = str(points)
+        db.session.commit()
+    return redirect(url_for('admin') + '?tab=settings')
 def create_course():
     name = request.form.get('name')
     certification_body = request.form.get('certification_body')
@@ -226,6 +365,36 @@ def complete_booking(booking_id):
         print(f"Your bed in {booking.dorm.room_type if booking.dorm else 'N/A'} has been released. Safe travels!")
         print(f"------------------")
     return redirect(url_for('admin') + '?tab=bookings')
+
+@app.route('/admin/bookings/<int:booking_id>/issue-cert', methods=['POST'])
+@login_required
+def issue_cert(booking_id):
+    if not current_user.is_admin:
+        return redirect(url_for('home'))
+        
+    booking = Booking.query.get_or_404(booking_id)
+    if not booking.course_id:
+        flash("This booking is not for a course.", "error")
+        return redirect(url_for('admin'))
+
+    # Check if already issued for this email
+    existing = Certificate.query.filter_by(customer_email=booking.customer_email, course_name=booking.course.name).first()
+    if existing:
+        flash("Certificate already issued to this email for this course.", "info")
+        return redirect(url_for('admin'))
+
+    # Issue Certificate (linked to user if account exists)
+    new_cert = Certificate(
+        user_id=booking.user_id,
+        customer_email=booking.customer_email,
+        course_name=booking.course.name,
+        cert_ref=f"BR-{uuid.uuid4().hex[:8].upper()}"
+    )
+    db.session.add(new_cert)
+    db.session.commit()
+    
+    flash(f"Certificate issued to {booking.customer_name} ({booking.customer_email})!", "success")
+    return redirect(url_for('admin'))
 
 @app.route('/admin/coupons/new', methods=['POST'])
 def create_coupon():
@@ -411,20 +580,29 @@ def process_payment():
         
     booking.status = "Confirmed"
     
+    # Link to user if logged in
+    if current_user.is_authenticated:
+        booking.user_id = current_user.id
+    
     # Reward System
     reward = Reward.query.filter_by(customer_email=booking.customer_email).first()
     if not reward:
-        reward = Reward(customer_email=booking.customer_email, points=0)
+        # Create reward record (linked to user if logged in)
+        user_id = current_user.id if current_user.is_authenticated else None
+        reward = Reward(user_id=user_id, customer_email=booking.customer_email, points=0)
         db.session.add(reward)
-    reward.points += 100
+    # Get reward points setting
+    points_setting = Setting.query.filter_by(key='points_per_booking').first()
+    points_to_add = int(points_setting.value) if points_setting else 100
     
+    reward.points += points_to_add
     db.session.commit()
     
     # Mock Email Confirmation
     print(f"--- MOCK EMAIL ---")
     print(f"To: {booking.customer_email}")
     print(f"Subject: Booking Confirmation {booking.booking_ref}")
-    print(f"Dear {booking.customer_name}, your booking is confirmed. Total: ${booking.total_price:.2f}. You have earned 100 reward points!")
+    print(f"Dear {booking.customer_name}, your booking is confirmed. Total: ${booking.total_price:.2f}. You have earned {points_to_add} reward points!")
     print(f"------------------")
     
     return jsonify({"success": True, "message": "Payment successful and booking confirmed!"})
