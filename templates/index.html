@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueReef Hostel & Dive School | Koh Tao</title>
+    <meta name="description" content="Book your hostel stay and SSI scuba certification with an experienced local crew in Koh Tao, Thailand.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-water"></i> BlueReef
+            </a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#courses">Courses</a></li>
+                <li><a href="#hostel">Hostel</a></li>
+                {% if current_user.is_authenticated %}
+                <li><a href="/dashboard">My Dashboard</a></li>
+                <li><a href="/logout" style="color: #e74c3c;"><i class="fa-solid fa-power-off"></i></a></li>
+                {% else %}
+                <li><a href="/login">Sign In</a></li>
+                {% endif %}
+                <li><a href="#contact" class="btn btn-outline">Book Now</a></li>
+            </ul>
+            <div class="hamburger">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <span class="badge">Welcome to Koh Tao</span>
+            <h1>Stay, Dive, Learn <br>& Belong</h1>
+            <p>Book your hostel stay and SSI scuba certification with an experienced local crew in one of Thailand’s most loved diving destinations.</p>
+            <div class="hero-actions">
+                <a href="#courses" class="btn btn-primary">Explore Courses</a>
+                <a href="#hostel" class="btn btn-secondary">View Rooms</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Courses Section -->
+    <section id="courses" class="section courses">
+        <div class="container">
+            <div class="section-header">
+                <h2>Choose Your SSI Scuba Certification</h2>
+                <p>Explore beginner, advanced, and specialty scuba diving courses. Learn with the best in clear tropical waters.</p>
+            </div>
+            
+            <div style="position: relative;">
+                <!-- Navigation Arrows -->
+                <button id="course-prev" style="position: absolute; left: -20px; top: 50%; transform: translateY(-50%); z-index: 10; background: white; border: none; width: 45px; height: 45px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: center; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='var(--primary)'">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button id="course-next" style="position: absolute; right: -20px; top: 50%; transform: translateY(-50%); z-index: 10; background: white; border: none; width: 45px; height: 45px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; color: var(--primary); display: flex; align-items: center; justify-content: center; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='var(--primary)'">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+
+                <div class="course-grid" id="course-slider">
+                    {% set default_images = [
+                      '/static/images/course_try_scuba_1777868888638.png',
+                      '/static/images/course_open_water_1777868924014.png',
+                      '/static/images/course_advanced_1777868940814.png'
+                    ] %}
+                    {% for course in courses %}
+                    {% set img_index = loop.index0 % 3 %}
+                    <div class="course-card">
+                        <div class="course-image" style="background-image: url('{{ course.image_url if course.image_url else default_images[img_index] }}');">
+                            <span class="course-badge">{{ course.certification_body }}</span>
+                        </div>
+                        <div class="course-details">
+                            <h3>{{ course.name }}</h3>
+                            <p class="course-meta"><i class="fa-regular fa-clock"></i> {{ course.duration }} Days | <i class="fa-solid fa-users"></i> Min Age: {{ course.min_age or 10 }}</p>
+                            <p>Learn essential scuba diving skills with this professional {{ course.certification_body }} certified course. Perfect for your tropical adventure.</p>
+                            <a href="#contact" class="btn btn-text">Inquire Now <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hostel Section -->
+    <section id="hostel" class="section hostel">
+        <div class="container hostel-container">
+            <div class="hostel-content">
+                <h2>More Than Just a Bed</h2>
+                <p>Join a community of divers and travelers. Our modern hostel offers comfortable dorms, private rooms, and vibrant social spaces.</p>
+                
+                {% if dorms %}
+                <h4 style="margin-top: 25px; color: var(--primary-dark); font-family: 'Outfit', sans-serif;">Live Inventory</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; margin-top: 10px;">
+                    {% for dorm in dorms %}
+                    <div style="background: rgba(12, 165, 176, 0.05); padding: 12px; border-left: 3px solid var(--primary); border-radius: 4px;">
+                        <strong style="display: block; color: var(--dark); font-size: 0.95rem;">{{ dorm.room_type }}</strong>
+                        <span style="font-size: 0.85rem; color: #555;"><i class="fa-solid fa-bed" style="color: var(--primary); margin-right: 5px;"></i>{{ dorm.available_beds }} beds available</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <ul class="amenities-list">
+                    <li><i class="fa-solid fa-wifi"></i> Fast Free Wi-Fi</li>
+                    <li><i class="fa-solid fa-snowflake"></i> A/C Dorms & Rooms</li>
+                    <li><i class="fa-solid fa-mug-hot"></i> On-site Café & Bar</li>
+                    <li><i class="fa-solid fa-water-ladder"></i> Tropical Swimming Pool</li>
+                    <li><i class="fa-solid fa-lock"></i> Secure Lockers</li>
+                    <li><i class="fa-solid fa-mask"></i> Dive Gear Storage</li>
+                </ul>
+                <a href="#contact" class="btn btn-primary">Check Availability</a>
+            </div>
+            <div class="hostel-images">
+                <div class="hostel-image main-img"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Crew Section -->
+    <section id="crew" class="section crew bg-light">
+        <div class="container">
+            <div class="section-header">
+                <h2>Meet the Ocean Crew</h2>
+                <p>Learn from passionate, experienced SSI Instructors who prioritize safety, fun, and marine conservation.</p>
+            </div>
+            
+            <div class="crew-grid">
+                <div class="crew-card">
+                    <div class="crew-img" style="background-image: url('https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80');"></div>
+                    <div class="crew-info">
+                        <h3>Alex Costa</h3>
+                        <p class="title">Lead SSI Instructor</p>
+                        <p class="bio">500+ certs. Loves macro marine life and underwater photography.</p>
+                    </div>
+                </div>
+                <div class="crew-card">
+                    <div class="crew-img" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80');"></div>
+                    <div class="crew-info">
+                        <h3>Sarah Jenkins</h3>
+                        <p class="title">Divemaster & Guide</p>
+                        <p class="bio">Local reef expert. Specializes in guiding deep and wreck dives.</p>
+                    </div>
+                </div>
+                <div class="crew-card">
+                    <div class="crew-img" style="background-image: url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80');"></div>
+                    <div class="crew-info">
+                        <h3>Marko V.</h3>
+                        <p class="title">Instructor & Free Diver</p>
+                        <p class="bio">Passionate about breathing techniques and conservation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inquiry Form -->
+    <section id="contact" class="section contact">
+        <div class="container contact-container">
+            <div class="contact-info">
+                <h2>Ready to Dive In?</h2>
+                <p>Send us an inquiry to book your course, dorm, or bundle package. We usually reply within a few hours!</p>
+
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Sairee Beach, Koh Tao, Thailand</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fa-solid fa-envelope"></i>
+                        <span>hello@bluereefkohtao.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>+66 81 234 5678</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contact-form-wrapper">
+                <form id="inquiryForm" class="contact-form">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" required placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" required placeholder="Your Email">
+                    </div>
+                    <div class="form-group">
+                        <select id="course_id" name="course_id">
+                            <option value="">Select a Course (Optional)</option>
+                            {% for course in courses %}
+                            <option value="{{ course.id }}">{{ course.name }} - ${{ course.price }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="dorm_id" name="dorm_id">
+                            <option value="">Select Accommodation (Optional)</option>
+                            {% for dorm in dorms %}
+                            <option value="{{ dorm.id }}">{{ dorm.room_type }} - ${{ dorm.price_per_night }}/night</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="date" id="check_in_date" name="check_in_date" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="coupon_code" name="coupon_code" placeholder="Coupon Code (Optional)" style="transition: all 0.3s;">
+                        <div id="coupon-error" style="display: none; color: #d32f2f; font-size: 0.85rem; margin-top: 5px; font-weight: 500;"><i class="fa-solid fa-circle-exclamation"></i> <span></span></div>
+                        {% if coupons %}
+                        <div style="text-align: right; margin-top: 5px;">
+                            <a href="#" id="view-coupons-link" style="font-size: 0.85rem; color: var(--primary); font-weight: 500;"><i class="fa-solid fa-tags"></i> View Available Coupons</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Pay & Confirm Booking</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-logo">
+                <i class="fa-solid fa-water"></i> BlueReef
+                <p>&copy; 2026 BlueReef Hostel & Dive School. All rights reserved.</p>
+            </div>
+            <div class="footer-socials">
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/66812345678" class="whatsapp-float" target="_blank" title="Chat with us on WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- Coupons Modal -->
+    <div id="coupons-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div style="background: white; padding: 25px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-family: 'Outfit', sans-serif;">Available Offers</h3>
+                <i class="fa-solid fa-xmark" id="close-coupons-modal" style="cursor: pointer; font-size: 1.2rem; color: #666;"></i>
+            </div>
+            <div id="coupons-list" style="max-height: 350px; overflow-y: auto;">
+                {% for cp in coupons %}
+                <div onclick="applyCoupon('{{ cp.code }}')" style="border: 2px dashed var(--primary); padding: 15px; margin-bottom: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: rgba(12, 165, 176, 0.05);" onmouseover="this.style.background='rgba(12, 165, 176, 0.15)'" onmouseout="this.style.background='rgba(12, 165, 176, 0.05)'">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size: 1.1rem; color: var(--primary-dark);">{{ cp.code }}</strong>
+                        <span style="background: var(--secondary); color: var(--dark); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">{{ cp.discount_percent }}% OFF</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #555; margin-top: 8px;">
+                        {% if cp.min_amount > 0 %}Min Spend: <strong>${{ "%.2f"|format(cp.min_amount) }}</strong><br>{% endif %}
+                        {% if cp.valid_from and cp.valid_until %}
+                            Valid: {{ cp.valid_from.strftime('%b %d') }} - {{ cp.valid_until.strftime('%b %d, %Y') }}
+                        {% elif cp.valid_from %}
+                            Valid from: {{ cp.valid_from.strftime('%b %d, %Y') }}
+                        {% elif cp.valid_until %}
+                            Expires: {{ cp.valid_until.strftime('%b %d, %Y') }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <p style="color: #666; text-align: center;">No coupons currently available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Payment Modal -->
+    <div id="payment-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="background: white; padding: 0; border-radius: 16px; max-width: 450px; width: 95%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div style="background: linear-gradient(135deg, var(--primary-dark), var(--primary)); padding: 25px; color: white; text-align: center;">
+                <h3 style="margin: 0; font-family: 'Outfit', sans-serif; letter-spacing: 0.5px;">Secure Checkout</h3>
+                <p style="margin: 10px 0 0; opacity: 0.9; font-size: 0.9rem;">Order: <span id="payment-booking-ref">---</span> • Total: <span id="payment-total-price">---</span></p>
+            </div>
+            <div style="padding: 30px;">
+                <form id="payment-form">
+                    <input type="hidden" id="payment-booking-id">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Card Number</label>
+                        <div style="position: relative;">
+                            <input type="text" placeholder="#### #### #### ####" maxlength="19" required style="width: 100%; padding: 12px 15px 12px 45px; border: 1.5px solid #eee; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s;">
+                            <i class="fa-solid fa-credit-card" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Expiry Date</label>
+                            <input type="text" placeholder="MM/YY" maxlength="5" required style="width: 100%; padding: 12px 15px; border: 1.5px solid #eee; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">CVV</label>
+                            <input type="password" placeholder="***" maxlength="3" required style="width: 100%; padding: 12px 15px; border: 1.5px solid #eee; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s;">
+                        </div>
+                    </div>
+                    <button type="submit" id="pay-button" style="width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <i class="fa-solid fa-lock"></i> Pay Now
+                    </button>
+                    <button type="button" id="cancel-payment" style="width: 100%; background: transparent; color: #999; border: none; padding: 10px; margin-top: 10px; font-size: 0.9rem; cursor: pointer;">Cancel Payment</button>
+                </form>
+                
+                <!-- Success State (Hidden) -->
+                <div id="payment-success-msg" style="display: none; text-align: center; padding: 20px 0;">
+                    <div style="width: 80px; height: 80px; background: #e8f5e9; color: #2e7d32; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px; animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3 style="margin-bottom: 10px; font-family: 'Outfit', sans-serif;">Payment Successful!</h3>
+                    <p style="color: #666; line-height: 1.5;">Your booking is confirmed. Check your email for details.</p>
+                    <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 25px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Return Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        #payment-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(12, 165, 176, 0.1);
+        }
+    </style>
+</body>
+</html>

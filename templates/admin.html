@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueReef Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #023047;
+            color: #fff;
+            position: fixed;
+            height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            font-family: 'Outfit', sans-serif;
+            text-align: center;
+            color: #0ca5b0;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #fff;
+            padding: 15px 25px;
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #1a1a2e;
+            border-left-color: #0ca5b0;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2><i class="fa-solid fa-water"></i> Admin</h2>
+        <a href="#" class="nav-link active" data-target="bookings-view"><i class="fa-solid fa-calendar-check"></i>
+            Bookings</a>
+        <a href="#" class="nav-link" data-target="courses-view"><i class="fa-solid fa-book-open"></i> Courses</a>
+        <a href="#" class="nav-link" data-target="dormitory-view"><i class="fa-solid fa-bed"></i> Dormitory</a>
+        <a href="#" class="nav-link" data-target="coupons-view"><i class="fa-solid fa-ticket"></i> Coupons</a>
+        <a href="#" class="nav-link" data-target="settings-view"><i class="fa-solid fa-gear"></i> Settings</a>
+        <a href="/"><i class="fa-solid fa-arrow-left"></i> Back to Site</a>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h2 id="page-title">Dashboard Overview</h2>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <input type="text" id="booking-search" placeholder="Search Ref, Name, Email..."
+                    style="padding: 8px 15px; border: 1px solid #e0e0e0; border-radius: 20px; width: 250px; outline: none; transition: border-color 0.3s;"
+                    onkeyup="searchBookings()">
+                <div>Admin User <i class="fa-solid fa-circle-user"></i></div>
+            </div>
+        </div>
+        <!-- Bookings View -->
+        <div id="bookings-view" class="view-section">
+            <div class="card">
+                <h3>Recent Bookings</h3>
+                <table id="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Ref</th>
+                            <th>Customer</th>
+                            <th>Course</th>
+                            <th>Dormitory</th>
+                            <th>Check In</th>
+                            <th>Pricing</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                        <tr>
+                            <td><strong>{{ b.booking_ref }}</strong></td>
+                            <td>
+                                {{ b.customer_name }}
+                                {% if b.user %}
+                                <span title="Verified Member (Profile: {{ b.user.name }})" style="color: #0ca5b0; font-size: 0.8rem; margin-left: 5px;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
+                                {% endif %}
+                                <br><small style="color:#666">{{ b.customer_email }}</small>
+                            </td>
+                            <td>
+                                {% if b.course %}
+                                {{ b.course.name }} <br><small style="color: #999;">#{{ b.course_id }}</small>
+                                {% else %} - {% endif %}
+                            </td>
+                            <td>
+                                {% if b.dorm %}
+                                {{ b.dorm.room_type }} <br><small style="color: #999;">#{{ b.dorm_id }}</small>
+                                {% else %} - {% endif %}
+                            </td>
+                            <td>{{ b.check_in_date or '-' }}</td>
+                            <td>
+                                {% if b.coupon_code %}
+                                <details>
+                                    <summary
+                                        style="cursor: pointer; font-weight: 700; color: #1976d2; background: #e3f2fd; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; user-select: none;">
+                                        ${{ "%.2f"|format(b.total_price) }} <i class="fa-solid fa-tag"
+                                            style="font-size:0.75rem;"></i>
+                                    </summary>
+                                    <div
+                                        style="margin-top: 6px; font-size: 0.82rem; color: #555; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #0ca5b0;">
+                                        <div>Original: <span style="text-decoration: line-through; color: #999;">${{
+                                                "%.2f"|format(b.original_price) }}</span></div>
+                                        <div>Code: <strong style="color: #0ca5b0;">{{ b.coupon_code }}</strong></div>
+                                        <div>Final: <strong style="color: #2e7d32;">${{ "%.2f"|format(b.total_price)
+                                                }}</strong></div>
+                                    </div>
+                                </details>
+                                {% else %}
+                                <strong>${{ "%.2f"|format(b.total_price) }}</strong>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span
+                                    class="badge {% if b.status == 'Confirmed' %}badge-success{% elif b.status == 'Completed' %}badge-warning{% else %}badge-warning{% endif %}"
+                                    style="margin-bottom: 5px; display: inline-block;">
+                                    {{ b.status }}
+                                </span><br>
+                                <small>{{ b.created_at.strftime('%Y-%m-%d') }}</small>
+                            </td>
+                            <td>
+                                {% if b.status == 'Confirmed' and b.dorm_id %}
+                                <form action="/admin/bookings/{{ b.id }}/complete" method="POST" style="margin: 0;"
+                                    onsubmit="return confirm('Release this bed back to inventory?');">
+                                    <button type="submit" class="btn"
+                                        style="padding: 4px 10px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"
+                                        title="Checkout / Release Bed"><i class="fa-solid fa-sign-out-alt"></i>
+                                        Checkout</button>
+                                </form>
+                                {% endif %}
+                                {% if b.course_id %}
+                                {% if (b.customer_email, b.course.name) in issued_certs %}
+                                <div style="margin-top: 5px;">
+                                    <span class="badge badge-success" style="font-size: 0.7rem;"><i
+                                            class="fa-solid fa-certificate"></i> Cert Issued</span>
+                                </div>
+                                {% else %}
+                                <form action="/admin/bookings/{{ b.id }}/issue-cert" method="POST"
+                                    style="margin: 5px 0 0;">
+                                    <button type="submit" class="btn"
+                                        style="padding: 4px 10px; background: #fff9e6; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                        Issue Cert <i class="fa-solid fa-award"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% endif %}
+                                {% if not b.status == 'Confirmed' and not b.course_id %}
+                                <span style="color: #ccc; font-size: 0.8rem;">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: #666;">No bookings yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Courses View -->
+        <div id="courses-view" class="view-section" style="display: none;">
+            <div class="card">
+                <h3>Course Management</h3>
+                <form action="/admin/courses/new" method="POST" enctype="multipart/form-data"
+                    style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;"
+                    onsubmit="return validateCourseForm(this)">
+                    <h4 style="margin-top: 0; margin-bottom: 10px; color: #333;">Add New Course</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <input type="text" name="name" placeholder="Course Name" required maxlength="100"
+                                style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                        </div>
+                        <div>
+                            <select name="certification_body" required
+                                style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                                <option value="" disabled selected>Select Certification</option>
+                                <option value="SSI">SSI</option>
+                                <option value="PADI">PADI</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="number" name="duration" placeholder="Duration (days)" required min="1"
+                                max="365"
+                                style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                        </div>
+                        <div>
+                            <input type="number" step="0.01" name="price" placeholder="Price ($)" required min="0"
+                                style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                        </div>
+                        <div>
+                            <input type="number" name="min_age" placeholder="Min Age (optional)" min="0" max="100"
+                                style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                        </div>
+                        <div>
+                            <input type="file" name="image" accept="image/*"
+                                style="padding: 5px; border: 1px solid #ccc; border-radius: 4px; width: 100%; background: white;">
+                            <small style="color: #666; font-size: 0.75rem;">Course Picture</small>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        style="background: #0ca5b0; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">Create
+                        Course</button>
+                </form>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Cert</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="courses-tbody">
+                        {% for c in courses %}
+                        <tr data-id="{{ c.id }}" style="background: #fff;">
+                            <td style="width: 50px; text-align: center;">
+                                <i class="fa-solid fa-bars drag-handle"
+                                    style="cursor: grab; color: #999; font-size: 1.2rem;"></i>
+                            </td>
+                            <td>
+                                {% if c.image_url %}
+                                <img src="{{ c.image_url }}" alt="Course"
+                                    style="width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                                {% else %}
+                                <div
+                                    style="width: 50px; height: 35px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.6rem;">
+                                    No Pic</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ c.name }}</td>
+                            <td>{{ c.certification_body }}</td>
+                            <td>${{ c.price }}</td>
+                            <td style="text-align: right; display: flex; gap: 5px; justify-content: flex-end;">
+                                <button type="button" class="btn"
+                                    onclick="openEditCourseModal({{ c.id }}, '{{ c.name }}', '{{ c.duration }}', '{{ c.certification_body }}', {{ c.price }}, {{ c.min_age or 0 }})"
+                                    style="padding: 2px 8px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 4px; cursor: pointer;"
+                                    title="Edit Course"><i class="fa-solid fa-pen"></i></button>
+                                <form action="/admin/courses/{{ c.id }}/delete" method="POST" style="margin: 0;"
+                                    onsubmit="return confirm('Delete this course?');">
+                                    <button type="submit" class="btn"
+                                        style="padding: 2px 8px; background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; border-radius: 4px; cursor: pointer;"
+                                        title="Delete Course"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Dormitory View -->
+        <div id="dormitory-view" class="view-section" style="display: none;">
+            <div class="card">
+                <h3>Dormitory Inventory</h3>
+                <form action="/admin/dorms/new" method="POST"
+                    style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h4 style="margin-top: 0; margin-bottom: 10px; color: #333;">Add New Dormitory</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" name="room_type" placeholder="Room Type (e.g. 4-Bed Dorm)" required
+                            style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="number" name="total_beds" placeholder="Total Beds" required
+                            style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="number" step="0.01" name="price_per_night" placeholder="Price / Night ($)" required
+                            style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <button type="submit"
+                        style="background: #0ca5b0; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">Create
+                        Dorm</button>
+                </form>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Room Type</th>
+                            <th>Available Beds</th>
+                            <th>Total Capacity</th>
+                            <th>Price per Night</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in dorms %}
+                        <tr>
+                            <td style="color: #999; font-size: 0.8rem;">#{{ d.id }}</td>
+                            <td>{{ d.room_type }}</td>
+                            <td><strong>{{ d.available_beds }}</strong></td>
+                            <td>{{ d.total_beds }}</td>
+                            <td>${{ d.price_per_night }}</td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <button type="button" class="btn"
+                                        onclick="openEditDormModal({{ d.id }}, '{{ d.room_type }}', {{ d.price_per_night }}, {{ d.total_beds }}, {{ d.available_beds }})"
+                                        style="padding: 2px 8px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 4px; cursor: pointer;"
+                                        title="Edit Dormitory"><i class="fa-solid fa-pen"></i></button>
+                                    <form action="/admin/dorms/{{ d.id }}/delete" method="POST" style="margin: 0;"
+                                        onsubmit="return confirm('Are you sure you want to delete this dormitory?');">
+                                        <button type="submit" class="btn"
+                                            style="padding: 2px 8px; background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; border-radius: 4px; cursor: pointer;"
+                                            title="Delete Dormitory"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Settings View -->
+        <div id="settings-view" class="view-section" style="display: none;">
+            <div class="card" style="max-width: 600px;">
+                <h3>Platform Settings</h3>
+                <form action="/admin/settings/update" method="POST" style="margin-top: 20px;">
+                    <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; border: 1px solid #eee;">
+                        <h4 style="margin-top: 0; color: #333; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-star" style="color: #f1c40f;"></i> Reward Point System
+                        </h4>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
+                            Define how many points users earn for every successful booking they make on the platform.
+                        </p>
+
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 10px;">
+                            Points Per Booking
+                        </label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" name="reward_points" value="{{ reward_points }}" required min="0"
+                                max="10000"
+                                style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 150px; font-size: 1.1rem; font-weight: 700; color: #0ca5b0;">
+                            <span style="font-weight: 600; color: #999;">Points</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"
+                        style="margin-top: 25px; width: 100%; padding: 15px; font-size: 1rem;">
+                        Save Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+        <!-- Coupons View -->
+        <div id="coupons-view" class="view-section" style="display: none;">
+            <div class="card">
+                <h3>Coupon Management</h3>
+                <form action="/admin/coupons/new" method="POST"
+                    style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h4 style="margin-top: 0; margin-bottom: 10px; color: #333;">Create New Coupon</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" name="code" placeholder="Coupon Code (e.g. SUMMER20)" required
+                            style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-transform: uppercase;">
+                        <input type="number" step="0.1" name="discount_percent" placeholder="Discount (%)" required
+                            max="100" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="number" step="0.01" name="min_amount" placeholder="Min Amount Required ($)"
+                            style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 3px;">Start
+                                    Date</label>
+                                <input type="date" id="valid_from" name="valid_from"
+                                    style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 3px;">End
+                                    Date</label>
+                                <input type="date" id="valid_until" name="valid_until"
+                                    style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        style="background: #0ca5b0; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">Create
+                        Coupon</button>
+                </form>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Discount</th>
+                            <th>Min Amount</th>
+                            <th>Valid Dates</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cp in coupons %}
+                        <tr>
+                            <td><strong>{{ cp.code }}</strong></td>
+                            <td>{{ cp.discount_percent }}%</td>
+                            <td>${{ cp.min_amount }}</td>
+                            <td>
+                                {% if cp.valid_from %}{{ cp.valid_from.strftime('%Y-%m-%d') }}{% else %}Now{% endif %}
+                                &rarr;
+                                {% if cp.valid_until %}{{ cp.valid_until.strftime('%Y-%m-%d') }}{% else %}Forever{%
+                                endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <button type="button" class="btn"
+                                        onclick="openEditModal({{ cp.id }}, '{{ cp.code }}', {{ cp.discount_percent }}, {{ cp.min_amount }}, '{{ cp.valid_from.strftime('%Y-%m-%d') if cp.valid_from else '' }}', '{{ cp.valid_until.strftime('%Y-%m-%d') if cp.valid_until else '' }}')"
+                                        style="padding: 2px 8px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 4px; cursor: pointer;"
+                                        title="Edit Coupon"><i class="fa-solid fa-pen"></i></button>
+                                    <form action="/admin/coupons/{{ cp.id }}/delete" method="POST" style="margin: 0;"
+                                        onsubmit="return confirm('Are you sure you want to delete this coupon?');">
+                                        <button type="submit" class="btn"
+                                            style="padding: 2px 8px; background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; border-radius: 4px; cursor: pointer;"
+                                            title="Delete Coupon"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Edit Coupon Modal -->
+    <div id="edit-coupon-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
+        <div
+            style="background: white; padding: 25px; border-radius: 12px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Edit Coupon</h3>
+                <i class="fa-solid fa-xmark" id="close-edit-modal"
+                    style="cursor: pointer; font-size: 1.2rem; color: #666;"></i>
+            </div>
+            <form id="edit-coupon-form" method="POST">
+                <div style="display: grid; gap: 12px; margin-bottom: 20px;">
+                    <input type="text" id="edit_code" name="code" placeholder="Coupon Code" required
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; text-transform: uppercase;">
+                    <input type="number" step="0.1" id="edit_discount" name="discount_percent"
+                        placeholder="Discount (%)" required max="100"
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="number" step="0.01" id="edit_min_amount" name="min_amount"
+                        placeholder="Min Amount Required ($)"
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="font-size: 0.85rem; color: #666; margin-bottom: 5px; display: block;">Valid
+                                From:</label>
+                            <input type="date" id="edit_valid_from" name="valid_from"
+                                style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; color: #666; margin-bottom: 5px; display: block;">Valid
+                                Until:</label>
+                            <input type="date" id="edit_valid_until" name="valid_until"
+                                style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit"
+                    style="width: 100%; background: #0ca5b0; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 1rem;">Save
+                    Changes</button>
+            </form>
+        </div>
+    </div>
+    <!-- Edit Course Modal -->
+    <div id="edit-course-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
+        <div
+            style="background: white; padding: 25px; border-radius: 12px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Edit Course</h3>
+                <i class="fa-solid fa-xmark" id="close-edit-course-modal"
+                    style="cursor: pointer; font-size: 1.2rem; color: #666;"></i>
+            </div>
+            <form id="edit-course-form" method="POST" enctype="multipart/form-data">
+                <div style="display: grid; gap: 12px; margin-bottom: 20px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Course Name</label>
+                    <input type="text" id="edit_course_name" name="name" required maxlength="100"
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Duration (days)</label>
+                    <input type="number" id="edit_course_duration" name="duration" required min="1" max="365"
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Certification Body</label>
+                    <select id="edit_course_certification" name="certification_body" required
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="SSI">SSI</option>
+                        <option value="PADI">PADI</option>
+                    </select>
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Price ($)</label>
+                    <input type="number" step="0.01" id="edit_course_price" name="price" required min="0"
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Minimum Age</label>
+                    <input type="number" id="edit_course_min_age" name="min_age" min="0" max="100"
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Course Picture
+                        (Replace)</label>
+                    <input type="file" name="image" accept="image/*"
+                        style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white;">
+                </div>
+                <button type="submit"
+                    style="width: 100%; background: #0ca5b0; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 1rem;">Save
+                    Course</button>
+            </form>
+        </div>
+    </div>
+    <!-- Edit Dorm Modal -->
+    <div id="edit-dorm-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
+        <div
+            style="background: white; padding: 25px; border-radius: 12px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Edit Dormitory</h3>
+                <i class="fa-solid fa-xmark" id="close-edit-dorm-modal"
+                    style="cursor: pointer; font-size: 1.2rem; color: #666;"></i>
+            </div>
+            <form id="edit-dorm-form" method="POST">
+                <div style="display: grid; gap: 12px; margin-bottom: 20px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Room Type</label>
+                    <input type="text" id="edit_dorm_room_type" name="room_type" required
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Price Per Night ($)</label>
+                    <input type="number" step="0.01" id="edit_dorm_price" name="price_per_night" required
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Total Beds</label>
+                    <input type="number" id="edit_dorm_total" name="total_beds" required
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label style="font-size: 0.85rem; color: #666; margin-bottom: -8px;">Available Beds</label>
+                    <input type="number" id="edit_dorm_available" name="available_beds" required
+                        style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <button type="submit"
+                    style="width: 100%; background: #0ca5b0; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 1rem;">Save
+                    Dormitory</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Sidebar Navigation Logic
+        const navLinks = document.querySelectorAll('.nav-link');
+        const viewSections = document.querySelectorAll('.view-section');
+        const pageTitle = document.getElementById('page-title');
+        function activateTab(link) {
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            pageTitle.textContent = link.textContent.trim() + " Management";
+            viewSections.forEach(section => section.style.display = 'none');
+            const targetId = link.getAttribute('data-target');
+            document.getElementById(targetId).style.display = 'block';
+            // Update URL without page reload so refresh stays on same tab
+            const tabName = targetId.replace('-view', '');
+            history.replaceState(null, '', '/dashboard?tab=' + tabName);
+        }
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                activateTab(link);
+            });
+        });
+        // Restore tab from URL on page load
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab) {
+            const targetLink = document.querySelector(`.nav-link[data-target="${tab}-view"]`);
+            if (targetLink) {
+                activateTab(targetLink);
+            } else {
+                activateTab(document.querySelector('.nav-link'));
+            }
+        } else {
+            activateTab(document.querySelector('.nav-link'));
+        }
+        // Initialize Drag and Drop sorting for Courses
+        const coursesTbody = document.getElementById('courses-tbody');
+        if (coursesTbody) {
+            Sortable.create(coursesTbody, {
+                handle: '.drag-handle',
+                animation: 150,
+                onEnd: function () {
+                    const order = [];
+                    coursesTbody.querySelectorAll('tr').forEach(row => {
+                        order.push(row.getAttribute('data-id'));
+                    });
+                    fetch('/admin/courses/reorder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ order: order })
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                console.error('Failed to reorder courses');
+                            }
+                        });
+                }
+            });
+        }
+        // Booking Search Filter
+        function searchBookings() {
+            const input = document.getElementById('booking-search');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('bookings-table');
+            const tr = table.getElementsByTagName('tr');
+            // Start from 1 to skip table header
+            for (let i = 1; i < tr.length; i++) {
+                // If it's the 'No bookings yet' row, skip it
+                if (tr[i].cells.length === 1) continue;
+                const refCell = tr[i].getElementsByTagName('td')[0];
+                const customerCell = tr[i].getElementsByTagName('td')[1];
+                if (refCell || customerCell) {
+                    const txtValueRef = refCell.textContent || refCell.innerText;
+                    const txtValueCustomer = customerCell.textContent || customerCell.innerText;
+                    if (txtValueRef.toLowerCase().indexOf(filter) > -1 || txtValueCustomer.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+        // Coupon Date Validation
+        const validFrom = document.getElementById('valid_from');
+        const validUntil = document.getElementById('valid_until');
+        if (validFrom && validUntil) {
+            validFrom.addEventListener('change', function () {
+                if (this.value) {
+                    let d = new Date(this.value);
+                    d.setDate(d.getDate() + 1);
+                    let nextDay = d.toISOString().split('T')[0];
+                    validUntil.min = nextDay;
+                    // If end date is set and is invalid, update it to the earliest valid date
+                    if (validUntil.value && validUntil.value <= this.value) {
+                        validUntil.value = nextDay;
+                    }
+                } else {
+                    validUntil.removeAttribute('min');
+                }
+            });
+        }
+        // Edit Coupon Modal Logic
+        const editModal = document.getElementById('edit-coupon-modal');
+        const closeEditModal = document.getElementById('close-edit-modal');
+        function openEditModal(id, code, discount, minAmt, validFrom, validUntil) {
+            document.getElementById('edit-coupon-form').action = '/admin/coupons/' + id + '/edit';
+            document.getElementById('edit_code').value = code;
+            document.getElementById('edit_discount').value = discount;
+            document.getElementById('edit_min_amount').value = minAmt;
+            document.getElementById('edit_valid_from').value = validFrom;
+            document.getElementById('edit_valid_until').value = validUntil;
+            // Set min valid_until based on valid_from if it exists
+            const editValidFrom = document.getElementById('edit_valid_from');
+            const editValidUntil = document.getElementById('edit_valid_until');
+            if (editValidFrom.value) {
+                let d = new Date(editValidFrom.value);
+                d.setDate(d.getDate() + 1);
+                editValidUntil.min = d.toISOString().split('T')[0];
+            } else {
+                editValidUntil.removeAttribute('min');
+            }
+            editModal.style.display = 'flex';
+        }
+        if (closeEditModal && editModal) {
+            closeEditModal.addEventListener('click', function () {
+                editModal.style.display = 'none';
+            });
+        }
+        if (editModal) {
+            window.addEventListener('click', function (e) {
+                if (e.target === editModal) {
+                    editModal.style.display = 'none';
+                }
+            });
+        }
+        // Edit Coupon Date Validation
+        const editValidFrom = document.getElementById('edit_valid_from');
+        const editValidUntil = document.getElementById('edit_valid_until');
+        if (editValidFrom && editValidUntil) {
+            editValidFrom.addEventListener('change', function () {
+                if (this.value) {
+                    let d = new Date(this.value);
+                    d.setDate(d.getDate() + 1);
+                    let nextDay = d.toISOString().split('T')[0];
+                    editValidUntil.min = nextDay;
+                    if (editValidUntil.value && editValidUntil.value <= this.value) {
+                        editValidUntil.value = nextDay;
+                    }
+                } else {
+                    editValidUntil.removeAttribute('min');
+                }
+            });
+        }
+        // Edit Course Modal Logic
+        const editCourseModal = document.getElementById('edit-course-modal');
+        function openEditCourseModal(id, name, duration, cert, price, minAge) {
+            document.getElementById('edit-course-form').action = '/admin/courses/' + id + '/edit';
+            document.getElementById('edit_course_name').value = name;
+            document.getElementById('edit_course_duration').value = duration;
+            const certSelect = document.getElementById('edit_course_certification');
+            certSelect.value = cert;
+            document.getElementById('edit_course_price').value = price;
+            document.getElementById('edit_course_min_age').value = minAge;
+            editCourseModal.style.display = 'flex';
+        }
+        document.getElementById('close-edit-course-modal').addEventListener('click', () => { editCourseModal.style.display = 'none'; });
+        window.addEventListener('click', (e) => { if (e.target === editCourseModal) editCourseModal.style.display = 'none'; });
+        // Edit Dorm Modal Logic
+        const editDormModal = document.getElementById('edit-dorm-modal');
+        function openEditDormModal(id, roomType, price, total, available) {
+            document.getElementById('edit-dorm-form').action = '/admin/dorms/' + id + '/edit';
+            document.getElementById('edit_dorm_room_type').value = roomType;
+            document.getElementById('edit_dorm_price').value = price;
+            document.getElementById('edit_dorm_total').value = total;
+            document.getElementById('edit_dorm_available').value = available;
+            editDormModal.style.display = 'flex';
+        }
+        document.getElementById('close-edit-dorm-modal').addEventListener('click', () => { editDormModal.style.display = 'none'; });
+        window.addEventListener('click', (e) => { if (e.target === editDormModal) editDormModal.style.display = 'none'; });
+        const editDormTotal = document.getElementById('edit_dorm_total');
+        const editDormAvailable = document.getElementById('edit_dorm_available');
+        if (editDormTotal && editDormAvailable) {
+            editDormAvailable.addEventListener('input', function () {
+                if (parseInt(this.value) > parseInt(editDormTotal.value)) {
+                    this.value = editDormTotal.value;
+                }
+            });
+            editDormTotal.addEventListener('input', function () {
+                if (parseInt(editDormAvailable.value) > parseInt(this.value)) {
+                    editDormAvailable.value = this.value;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
